@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// State change-set aktif (toggle per perubahan + status remediasi) dipersist
+// agar demo konsisten antar-refresh; setiap eksekusi validasi tersimpan
+// sebagai bukti audit yang dapat dibandingkan.
+model WorkspaceState {
+  id           String   @id @default("main")
+  scenarioId   String
+  changeStates String // JSON: { [changeId]: { applied: boolean, remediated: boolean } }
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+model ValidationRun {
+  id             String   @id @default(cuid())
+  requestId      String
+  label          String
+  verdict        String // PASS | FAIL | INCONCLUSIVE
+  criticalCount  Int      @default(0)
+  highCount      Int      @default(0)
+  warnCount      Int      @default(0)
+  reportJson     String // laporan lengkap hasil engine
+  changeSnapshot String // JSON status change-set saat run
+  createdAt      DateTime @default(now())
+}
